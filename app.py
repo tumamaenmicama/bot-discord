@@ -63,7 +63,7 @@ class Bot(commands.Bot):
             threading.Thread(target=run_flask, daemon=True).start()
             print("🚀 Flask server started in background")
 
-    @tasks.loop(minutes=5)
+    @tasks.loop(seconds=10)
     async def update_status(self):
         try:
             statuses = [
