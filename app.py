@@ -65,13 +65,12 @@ class Bot(commands.Bot):
             print("🚀 Flask server started in background")
 
     @tasks.loop(seconds=5)
-    async def update_status(self):
+async def update_status(self):
     try:
-        # Buscar el servidor específico por ID
+        # Only count non-bot members in a specific server (Conzada server)
         target_guild_id = 1399923106075771022
         target_guild = self.get_guild(target_guild_id)
 
-        # Contar miembros reales en ese servidor
         total_members = 0
         if target_guild:
             total_members = sum(1 for member in target_guild.members if not member.bot)
@@ -85,7 +84,7 @@ class Bot(commands.Bot):
         ]
 
         chosen = random.choice(statuses)
-        print(f"🔄 Updating status to: {chosen.replace(chr(10), ' / ')}")  # \n → /
+        print(f"🔄 Updating status to: {chosen.replace(chr(10), ' / ')}")
         activity = discord.Activity(
             type=discord.ActivityType.watching,
             name=chosen
@@ -94,6 +93,7 @@ class Bot(commands.Bot):
 
     except Exception as e:
         print(f"⚠️ Status update failed: {e}")
+
         
     @update_status.before_loop
     async def before_status_update(self):
