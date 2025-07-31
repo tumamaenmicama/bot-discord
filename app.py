@@ -66,35 +66,35 @@ class Bot(commands.Bot):
 
     @tasks.loop(seconds=5)
     async def update_status(self):
-        try:
-            # Get total non-bot members across all guilds
-            unique_members = set()
-            for guild in self.guilds:
-                for member in guild.members:
-                    if not member.bot:
-                        unique_members.add(member.id)
+    try:
+        # Buscar el servidor específico por ID
+        target_guild_id = 1399923106075771022
+        target_guild = self.get_guild(target_guild_id)
 
-            total_members = len(unique_members)
+        # Contar miembros reales en ese servidor
+        total_members = 0
+        if target_guild:
+            total_members = sum(1 for member in target_guild.members if not member.bot)
 
-            statuses = [
-                "Best Product\nConzada.cc",
-                f"({total_members}) members in Conzada",
-                f"Operating in {len(self.guilds)} servers — Trusted by communities",
-                "Conzada.cc | Your Secure option for main accs",
-                "System Status: Safe",
-            ]
+        statuses = [
+            "Best Product\nConzada.cc",
+            f"({total_members}) members in Conzada",
+            f"Operating in {len(self.guilds)} servers — Trusted by communities",
+            "Conzada.cc | Your Secure option for main accs",
+            "System Status: Safe",
+        ]
 
-            chosen = random.choice(statuses)
-            print(f"🔄 Updating status to: {chosen.replace(chr(10), ' / ')}")  # \n → /
-            activity = discord.Activity(
-                type=discord.ActivityType.watching,
-                name=chosen
-            )
-            await self.change_presence(activity=activity)
+        chosen = random.choice(statuses)
+        print(f"🔄 Updating status to: {chosen.replace(chr(10), ' / ')}")  # \n → /
+        activity = discord.Activity(
+            type=discord.ActivityType.watching,
+            name=chosen
+        )
+        await self.change_presence(activity=activity)
 
-        except Exception as e:
-            print(f"⚠️ Status update failed: {e}")
-
+    except Exception as e:
+        print(f"⚠️ Status update failed: {e}")
+        
     @update_status.before_loop
     async def before_status_update(self):
         await self.wait_until_ready()
