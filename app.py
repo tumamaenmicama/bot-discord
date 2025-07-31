@@ -65,22 +65,21 @@ class Bot(commands.Bot):
 
     @tasks.loop(seconds=10)
     async def update_status(self):
-    try:
-        statuses = [
-            "Best Product\nConzada.cc",
-            f"Connected with users like {random.choice([member.name for guild in self.guilds for member in guild.members if not member.bot])}",
-            f"Operating in {len(self.guilds)} servers — Trusted by communities",
-            "Conzada.cc\nYour Secure Holiday Companion",
-            "System Status: Summer Mode Activated",
-        ]
-        activity = discord.Activity(
-            type=discord.ActivityType.watching,
-            name=random.choice(statuses)
-        )
-        await self.change_presence(activity=activity)
-    except Exception as e:
-        print(f"⚠️ Status update failed: {e}")
-
+        try:
+            statuses = [
+                "Best Product\nConzada.cc",
+                f"Connected with users like {random.choice([member.name for guild in self.guilds for member in guild.members if not member.bot])}",
+                f"Operating in {len(self.guilds)} servers — Trusted by communities",
+                "Conzada.cc\nYour Secure Holiday Companion",
+                "System Status: Summer Mode Activated",
+            ]
+            activity = discord.Activity(
+                type=discord.ActivityType.watching,
+                name=random.choice(statuses)
+            )
+            await self.change_presence(activity=activity)
+        except Exception as e:
+            print(f"⚠️ Status update failed: {e}")
 
     @update_status.before_loop
     async def before_status_update(self):
