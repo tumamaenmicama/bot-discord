@@ -64,8 +64,8 @@ class Bot(commands.Bot):
             threading.Thread(target=run_flask, daemon=True).start()
             print("🚀 Flask server started in background")
 
-    @tasks.loop(seconds=10)
-    async def update_status(self):
+    @tasks.loop(seconds=5)
+async def update_status(self):
     try:
         # Get total non-bot members across all guilds
         unique_members = set()
@@ -76,24 +76,25 @@ class Bot(commands.Bot):
 
         total_members = len(unique_members)
 
-            statuses = [
-                "Best Product\nConzada.cc",
-                f"({total_members}) members in Conzada",
-                f"Operating in {len(self.guilds)} servers — Trusted by communities",
-                "Conzada.cc | Your Secure option for main accs",
-                "System Status: Safe",
-            ]
+        statuses = [
+            "Best Product\nConzada.cc",
+            f"({total_members}) members in Conzada",
+            f"Operating in {len(self.guilds)} servers — Trusted by communities",
+            "Conzada.cc | Your Secure option for main accs",
+            "System Status: Safe",
+        ]
 
-            chosen = random.choice(statuses)
-            print(f"🔄 Updating status to: {chosen.replace(chr(10), ' / ')}")  # \n → /
-            activity = discord.Activity(
-                type=discord.ActivityType.watching,
-                name=chosen
-            )
-            await self.change_presence(activity=activity)
+        chosen = random.choice(statuses)
+        print(f"🔄 Updating status to: {chosen.replace(chr(10), ' / ')}")  # \n → /
+        activity = discord.Activity(
+            type=discord.ActivityType.watching,
+            name=chosen
+        )
+        await self.change_presence(activity=activity)
 
-        except Exception as e:
-            print(f"⚠️ Status update failed: {e}")
+    except Exception as e:
+        print(f"⚠️ Status update failed: {e}")
+
 
     @update_status.before_loop
     async def before_status_update(self):
