@@ -16,6 +16,7 @@ load_dotenv()
 intents = discord.Intents.default()
 intents.guilds = True
 intents.message_content = True
+intents.presences = True  # Enable presence updates
 
 # Flask Setup
 app = Flask(__name__)
@@ -66,18 +67,30 @@ class Bot(commands.Bot):
     @tasks.loop(seconds=10)
     async def update_status(self):
         try:
+            user_names = []
+            for guild in self.guilds:
+                # Use try/except to safely handle large servers or missing member cache
+                try:
+                    user_names.extend([member.name for member in guild.members if not member.bot])
+                except Exception:
+                    continue
+
             statuses = [
                 "Best Product\nConzada.cc",
-                f"Connected with users like {random.choice([member.name for guild in self.guilds for member in guild.members if not member.bot])}",
+                f"Connected with users like {random.choice(user_names) if user_names else 'you'}",
                 f"Operating in {len(self.guilds)} servers — Trusted by communities",
                 "Conzada.cc\nYour Secure Holiday Companion",
                 "System Status: Summer Mode Activated",
             ]
+
+            chosen = random.choice(statuses)
+            print(f"🔄 Updating status to: {chosen.replace(chr(10), ' / ')}")  # \n → /
             activity = discord.Activity(
                 type=discord.ActivityType.watching,
-                name=random.choice(statuses)
+                name=chosen
             )
             await self.change_presence(activity=activity)
+
         except Exception as e:
             print(f"⚠️ Status update failed: {e}")
 
