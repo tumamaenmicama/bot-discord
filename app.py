@@ -67,12 +67,12 @@ class Bot(commands.Bot):
     async def update_status(self):
         try:
             statuses = [
-                "🎮 Best Product | \n Conzada.cc",
-                f"📡 Connected to {len(self.guilds)} networks",
-                f"⚙️ Operating across {len(self.guilds)} servers",
-                "💻 Conzada.cc \n Best Security Online",
-                "🧠 Evolving System | Conzada.cc",
-            ]
+    "Best Product\nConzada.cc",
+    f"Connected with users like {random.choice([member.name for guild in self.guilds for member in guild.members if not member.bot])}",
+    f"Operating in {len(self.guilds)} servers — Trusted by communities",
+    "Conzada.cc\nYour Secure Holiday Companion",
+    "System Status: Summer Mode Activated",
+]
             activity = discord.Activity(
                 type=discord.ActivityType.watching,
                 name=random.choice(statuses)
