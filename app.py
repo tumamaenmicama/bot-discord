@@ -67,15 +67,12 @@ class Bot(commands.Bot):
     async def update_status(self):
         try:
             statuses = [
-                "👁️ Escaping Limits | Conzada.cc",
-                f"📡 Connected to {len(self.guilds)} networks",
-                f"⚙️ Operating across {len(self.guilds)} servers",
-                "🚀 Conzada.cc • Adaptive Core Online",
-                "🧠 Evolving System | Conzada.cc",
-                "🔐 Accumulating Escape Nodes...",
-                "🌐 Quantum Proxy Active | Conzada.cc",
-                "🦾 Autonomous Protocols Engaged",
-            ]
+    "🚀 Conzada.cc ║ Adaptive Core Online",
+    "🧠 Conzada.cc ⟶ Evolving Neural Threads",
+    "🌐 Conzada.cc • Monitoring Global Nodes",
+    "🔐 Conzada.cc — Accumulating Escape Points"
+]
+
             activity = discord.Activity(
                 type=discord.ActivityType.watching,
                 name=random.choice(statuses)
