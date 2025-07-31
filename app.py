@@ -66,21 +66,22 @@ class Bot(commands.Bot):
 
     @tasks.loop(seconds=10)
     async def update_status(self):
-        try:
-            user_names = []
-            for guild in self.guilds:
-                # Use try/except to safely handle large servers or missing member cache
-                try:
-                    user_names.extend([member.name for member in guild.members if not member.bot])
-                except Exception:
-                    continue
+    try:
+        # Get total non-bot members across all guilds
+        unique_members = set()
+        for guild in self.guilds:
+            for member in guild.members:
+                if not member.bot:
+                    unique_members.add(member.id)
+
+        total_members = len(unique_members)
 
             statuses = [
                 "Best Product\nConzada.cc",
-                f"Connected with users like {random.choice(user_names) if user_names else 'you'}",
+                f"({total_members}) members in Conzada",
                 f"Operating in {len(self.guilds)} servers — Trusted by communities",
-                "Conzada.cc\nYour Secure Holiday Companion",
-                "System Status: Summer Mode Activated",
+                "Conzada.cc | Your Secure option for main accs",
+                "System Status: Safe",
             ]
 
             chosen = random.choice(statuses)
