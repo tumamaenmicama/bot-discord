@@ -6,7 +6,16 @@ from flask import Flask
 import sys
 import aiohttp
 import asyncio
+
+import random
+
 from dotenv import load_dotenv
+
+
+intents = discord.Intents.default()
+intents.guilds = True  # Needed for len(bot.guilds)
+
+bot = commands.Bot(command_prefix="!", intents=intents)
 
 # Initialize environment variables
 load_dotenv()
@@ -74,20 +83,35 @@ class Bot(commands.Bot):
             print("🚀 Flask server started in background")
 
     @tasks.loop(minutes=5)
-    async def update_status(self):
-        """Update bot presence periodically"""
-        try:
-            activity = discord.Activity(
-                type=discord.ActivityType.watching,
-                name=f"{len(self.guilds)} servers"
-            )
-            await self.change_presence(activity=activity)
-        except Exception as e:
-            print(f"⚠️ Status update failed: {e}")
+    try:
+        statuses = [
+            "👁️ Escaping Limits | Conzada.cc",
+            f"📡 Connected to {len(bot.guilds)} networks",
+            f"⚙️ Operating across {len(bot.guilds)} servers",
+            "🚀 Conzada.cc • Adaptive Core Online",
+            "🧠 Evolving System | Conzada.cc",
+            "🔐 Accumulating Escape Nodes...",
+            "🌐 Quantum Proxy Active | Conzada.cc",
+            "🦾 Autonomous Protocols Engaged",
+        ]
+        activity = discord.Activity(
+            type=discord.ActivityType.watching,
+            name=random.choice(statuses)
+        )
+        await bot.change_presence(activity=activity)
+    except Exception as e:
+        print(f"⚠️ Status update failed: {e}")
 
-    @update_status.before_loop
-    async def before_status_update(self):
-        await self.wait_until_ready()
+@update_status.before_loop
+async def before_status_update():
+    await bot.wait_until_ready()
+
+# Start loop after bot is ready
+@bot.event
+async def on_ready():
+    print(f"✅ Logged in as {bot.user}")
+    update_status.start()  # Start the status update loop
+
 
     async def close(self):
         """Cleanup on shutdown"""
