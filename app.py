@@ -65,7 +65,7 @@ class Bot(commands.Bot):
             print("🚀 Flask server started in background")
 
     @tasks.loop(seconds=5)
-async def update_status(self):
+    async def update_status(self):
     try:
         # Only count non-bot members in a specific server (Conzada server)
         target_guild_id = 1399923106075771022
