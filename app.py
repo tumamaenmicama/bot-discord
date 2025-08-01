@@ -50,10 +50,6 @@ class Bot(commands.Bot):
             print(f"❌ Failed to load cog: {e}")
             traceback.print_exc()
 
-        @self.tree.command(name="ping", description="Check bot latency")
-        async def ping(interaction: discord.Interaction):
-            await interaction.response.send_message(f"Pong! 🏓 Latency is {round(self.latency * 1000)}ms")
-
         await self.tree.sync()
         self.update_status.start()
 
