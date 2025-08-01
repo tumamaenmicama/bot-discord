@@ -16,7 +16,7 @@ load_dotenv()
 intents = discord.Intents.default()
 intents.guilds = True
 intents.message_content = True
-intents.presences = True  # Enable presence updates
+intents.presences = True
 
 # Flask Setup
 app = Flask(__name__)
@@ -50,6 +50,10 @@ class Bot(commands.Bot):
             print(f"❌ Failed to load cog: {e}")
             traceback.print_exc()
 
+        @self.tree.command(name="ping", description="Check bot latency")
+        async def ping(interaction: discord.Interaction):
+            await interaction.response.send_message(f"Pong! 🏓 Latency is {round(self.latency * 1000)}ms")
+
         await self.tree.sync()
         self.update_status.start()
 
@@ -65,9 +69,8 @@ class Bot(commands.Bot):
             print("🚀 Flask server started in background")
 
     @tasks.loop(seconds=5)
-    async def update_status(self):  # Fixed indentation here
+    async def update_status(self):
         try:
-            # Only count non-bot members in a specific server (Conzada server)
             target_guild_id = 1399923106075771022
             target_guild = self.get_guild(target_guild_id)
 
