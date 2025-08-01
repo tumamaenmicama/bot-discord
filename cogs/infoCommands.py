@@ -11,19 +11,53 @@ import uuid
 import gc
 from datetime import datetime
 
-CONFIG_FILE = "info_channels.json"
-
-
 class InfoCommands(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
-        self.api_url = "https://glob-info2.vercel.app/info"
-        self.generate_url = "https://genprofile2.vercel.app/generate"
-        self.session = aiohttp.ClientSession()
-        self.config_data = self.load_config()
-        self.cooldowns = {}
+        ...
+        self.bot.tree.add_command(self.setup_slash)  # Add this line
 
-   
+    @app_commands.command(name="setup", description="Set up a channel for info commands")
+    @app_commands.describe(
+        server_id="The server ID to configure",
+        channel_id="The channel ID to allow"
+    )
+    async def setup_slash(
+        self,
+        interaction: discord.Interaction,
+        server_id: str,
+        channel_id: str
+    ):
+        if str(interaction.guild.id) != server_id:
+            return await interaction.response.send_message(
+                "❌ You can only configure the server you're currently in.",
+                ephemeral=True
+            )
+
+        guild = interaction.guild
+        channel = guild.get_channel(int(channel_id))
+
+        if not channel:
+            return await interaction.response.send_message(
+                f"❌ Channel ID `{channel_id}` not found in this server.",
+                ephemeral=True
+            )
+
+        self.config_data["servers"].setdefault(server_id, {"info_channels": [], "config": {}})
+        if channel_id not in self.config_data["servers"][server_id]["info_channels"]:
+            self.config_data["servers"][server_id]["info_channels"].append(channel_id)
+            self.save_config()
+
+        embed = discord.Embed(
+            title="✅ Setup Complete",
+            description=f"Channel {channel.mention} has been allowed for `/info` commands!",
+            color=discord.Color.green()
+        )
+        embed.add_field(name="Server", value=guild.name, inline=True)
+        embed.add_field(name="Channel", value=channel.mention, inline=True)
+        embed.set_footer(text="Conzada - Setup Manager")
+
+        await interaction.response.send_message(embed=embed)
 
     
 
@@ -312,3 +346,4 @@ class InfoCommands(commands.Cog):
 
 async def setup(bot):
     await bot.add_cog(InfoCommands(bot))
+
