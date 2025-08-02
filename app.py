@@ -1,5 +1,6 @@
 import discord
 from discord.ext import commands, tasks
+from discord import app_commands
 import os
 import traceback
 from flask import Flask
@@ -56,8 +57,7 @@ class Bot(commands.Bot):
                 print(f"🔄 Synced slash commands for guild: {guild.name} ({guild.id})")
             except Exception as e:
                 print(f"❌ Failed to sync in guild {guild.id}: {e}")
-            
-            
+
         self.update_status.start()
 
     async def on_ready(self):
@@ -82,7 +82,6 @@ class Bot(commands.Bot):
                 total_members = sum(1 for member in target_guild.members if not member.bot)
 
             statuses = [
-                "Best Product\nConzada.cc",
                 f"({total_members}) members in Conzada",
                 f"Operating in {len(self.guilds)} servers — Trusted by communities",
                 "Conzada.cc | Your Secure option for main accs",
@@ -109,9 +108,22 @@ class Bot(commands.Bot):
             await self.session.close()
         await super().close()
 
+bot = Bot()
+
+@bot.tree.command(name="setup", description="Choose a channel to send the info embed to.")
+@app_commands.describe(channel="Select the target channel")
+async def setup(interaction: discord.Interaction, channel: discord.TextChannel):
+    embed = discord.Embed(
+        title="Welcome to Conzada!",
+        description="Your secure solution for premium services.",
+        color=discord.Color.green()
+    )
+    embed.set_footer(text="Thank you for choosing us!")
+    await channel.send(embed=embed)
+    await interaction.response.send_message(f"✅ Embed sent to {channel.mention}.", ephemeral=True)
+
 # Main entry point
 async def main():
-    bot = Bot()
     try:
         await bot.start(os.getenv("TOKEN"))
     except KeyboardInterrupt:
@@ -125,5 +137,4 @@ if __name__ == "__main__":
     if os.environ.get('RENDER'):
         asyncio.run(main())
     else:
-        bot = Bot()
         bot.run(os.getenv("TOKEN"))
