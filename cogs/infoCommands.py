@@ -21,14 +21,13 @@ class InfoCommands(commands.Cog):
         with open(CONFIG_FILE, "w") as f:
             json.dump(self.config_data, f, indent=4)
 
-    # ────── 🟦 SLASH COMMAND: /setup channel ──────
+    # ────── SLASH COMMAND: /setup channel ──────
     @app_commands.command(name="setup", description="Register an info channel to send messages to")
     @app_commands.describe(channel="Select a channel to register as info channel")
     async def setup_slash(self, interaction: discord.Interaction, channel: discord.TextChannel):
         guild_id = str(interaction.guild.id)
         channel_id = str(channel.id)
 
-        # Store in config
         if guild_id not in self.config_data["servers"]:
             self.config_data["servers"][guild_id] = {
                 "info_channels": [],
@@ -39,7 +38,6 @@ class InfoCommands(commands.Cog):
             self.config_data["servers"][guild_id]["info_channels"].append(channel_id)
             self.save_config()
 
-        # Send embed to selected channel
         embed = discord.Embed(
             title="✅ Info Channel Registered",
             description=f"This channel has been registered for `!info` commands.",
@@ -47,13 +45,12 @@ class InfoCommands(commands.Cog):
         )
         await channel.send(embed=embed)
 
-        # Respond to user
         await interaction.response.send_message(
             f"✅ Channel {channel.mention} registered and notified!",
             ephemeral=True
         )
 
-    # ────── HYBRID: /infochannels ──────
+    # ────── HYBRID COMMAND: /infochannels ──────
     @commands.hybrid_command(name="infochannels", description="List allowed channels")
     async def list_info_channels(self, ctx: commands.Context):
         guild_id = str(ctx.guild.id)
@@ -80,9 +77,17 @@ class InfoCommands(commands.Cog):
 
         await ctx.send(embed=embed)
 
-    # Required to sync the slash command
+    # Properly register the slash command
     async def cog_load(self):
         self.bot.tree.add_command(self.setup_slash)
 
-async def setup(bot):
+        # Optional: auto-sync to guilds
+        for guild in self.bot.guilds:
+            try:
+                await self.bot.tree.sync(guild=discord.Object(id=guild.id))
+                print(f"Synced commands for guild: {guild.name} ({guild.id})")
+            except Exception as e:
+                print(f"Failed to sync for guild {guild.id}: {e}")
+
+async def setup(bot: commands.Bot):
     await bot.add_cog(InfoCommands(bot))
