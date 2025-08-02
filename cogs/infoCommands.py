@@ -1,21 +1,14 @@
 import discord
 from discord.ext import commands
 from discord import app_commands
-import aiohttp
-from datetime import datetime
 import json
 import os
-import asyncio
-import io
-import uuid
-import gc
 
 CONFIG_FILE = "info_channels.json"
 
 class InfoCommands(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
-        self.api_url = "https://api.discord.bio/v1/user/"
         self.config_data = self.load_config()
 
     def load_config(self):
@@ -28,60 +21,39 @@ class InfoCommands(commands.Cog):
         with open(CONFIG_FILE, "w") as f:
             json.dump(self.config_data, f, indent=4)
 
-    # ─────────────────────────────────────────────────────
-    # Slash command /setup
-    # ─────────────────────────────────────────────────────
-    @app_commands.command(name="setup", description="Set the channel where info embeds will be sent")
-    async def setup_slash(self, interaction: discord.Interaction):
-        class ChannelSelect(discord.ui.Select):
-            def __init__(self):
-                options = [
-                    discord.SelectOption(
-                        label=channel.name,
-                        description="Text channel",
-                        value=str(channel.id)
-                    )
-                    for channel in interaction.guild.text_channels[:25]  # Discord limits to 25 options
-                ]
-                super().__init__(placeholder="Choose a channel", min_values=1, max_values=1, options=options)
+    # ────── 🟦 SLASH COMMAND: /setup channel ──────
+    @app_commands.command(name="setup", description="Register an info channel to send messages to")
+    @app_commands.describe(channel="Select a channel to register as info channel")
+    async def setup_slash(self, interaction: discord.Interaction, channel: discord.TextChannel):
+        guild_id = str(interaction.guild.id)
+        channel_id = str(channel.id)
 
-            async def callback(self, select_interaction: discord.Interaction):
-                selected_channel_id = self.values[0]
-                guild_id = str(interaction.guild.id)
+        # Store in config
+        if guild_id not in self.config_data["servers"]:
+            self.config_data["servers"][guild_id] = {
+                "info_channels": [],
+                "config": {}
+            }
 
-                # Update config
-                if guild_id not in self.view.cog.config_data["servers"]:
-                    self.view.cog.config_data["servers"][guild_id] = {
-                        "info_channels": [],
-                        "config": {}
-                    }
+        if channel_id not in self.config_data["servers"][guild_id]["info_channels"]:
+            self.config_data["servers"][guild_id]["info_channels"].append(channel_id)
+            self.save_config()
 
-                self.view.cog.config_data["servers"][guild_id]["info_channels"] = [selected_channel_id]
-                self.view.cog.save_config()
+        # Send embed to selected channel
+        embed = discord.Embed(
+            title="✅ Info Channel Registered",
+            description=f"This channel has been registered for `!info` commands.",
+            color=discord.Color.green()
+        )
+        await channel.send(embed=embed)
 
-                selected_channel = interaction.guild.get_channel(int(selected_channel_id))
-                await select_interaction.response.send_message(
-                    f"✅ Info embed channel set to {selected_channel.mention}", ephemeral=True)
+        # Respond to user
+        await interaction.response.send_message(
+            f"✅ Channel {channel.mention} registered and notified!",
+            ephemeral=True
+        )
 
-                # Send confirmation embed in selected channel
-                embed = discord.Embed(
-                    title="✅ Info Channel Setup",
-                    description="This channel has been registered to receive info commands.",
-                    color=discord.Color.green()
-                )
-                await selected_channel.send(embed=embed)
-
-        class SetupView(discord.ui.View):
-            def __init__(self, cog):
-                super().__init__(timeout=60)
-                self.cog = cog
-                self.add_item(ChannelSelect())
-        
-        await interaction.response.send_message("Select a channel to set as the info target:", view=SetupView(self), ephemeral=True)
-
-    # ─────────────────────────────────────────────────────
-    # Legacy hybrid command to list info channels
-    # ─────────────────────────────────────────────────────
+    # ────── HYBRID: /infochannels ──────
     @commands.hybrid_command(name="infochannels", description="List allowed channels")
     async def list_info_channels(self, ctx: commands.Context):
         guild_id = str(ctx.guild.id)
@@ -108,6 +80,9 @@ class InfoCommands(commands.Cog):
 
         await ctx.send(embed=embed)
 
+    # Required to sync the slash command
+    async def cog_load(self):
+        self.bot.tree.add_command(self.setup_slash)
 
 async def setup(bot):
     await bot.add_cog(InfoCommands(bot))
