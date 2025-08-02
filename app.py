@@ -50,7 +50,14 @@ class Bot(commands.Bot):
             print(f"❌ Failed to load cog: {e}")
             traceback.print_exc()
 
-        await self.tree.sync()
+        for guild in self.guilds:
+            try:
+                await self.tree.sync(guild=discord.Object(id=guild.id))
+                print(f"🔄 Synced slash commands for guild: {guild.name} ({guild.id})")
+            except Exception as e:
+                print(f"❌ Failed to sync in guild {guild.id}: {e}")
+            
+            
         self.update_status.start()
 
     async def on_ready(self):
