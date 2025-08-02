@@ -22,33 +22,41 @@ class InfoCommands(commands.Cog):
             json.dump(self.config_data, f, indent=4)
 
     # ────── SLASH COMMAND: /setup channel ──────
-    @app_commands.command(name="setup", description="Register an info channel to send messages to")
-    @app_commands.describe(channel="Select a channel to register as info channel")
+    @app_commands.command(name="setup", description="Register an info channel to send info embeds")
+    @app_commands.describe(channel="Choose the channel to send the info embed to")
     async def setup_slash(self, interaction: discord.Interaction, channel: discord.TextChannel):
-        guild_id = str(interaction.guild.id)
-        channel_id = str(channel.id)
+    guild_id = str(interaction.guild.id)
+    channel_id = str(channel.id)
 
-        if guild_id not in self.config_data["servers"]:
-            self.config_data["servers"][guild_id] = {
-                "info_channels": [],
-                "config": {}
-            }
+    # Inicializar datos del servidor si no existen
+    if guild_id not in self.config_data["servers"]:
+        self.config_data["servers"][guild_id] = {
+            "info_channels": [],
+            "config": {}
+        }
 
-        if channel_id not in self.config_data["servers"][guild_id]["info_channels"]:
-            self.config_data["servers"][guild_id]["info_channels"].append(channel_id)
-            self.save_config()
+    # Agregar canal si no está registrado
+    if channel_id not in self.config_data["servers"][guild_id]["info_channels"]:
+        self.config_data["servers"][guild_id]["info_channels"].append(channel_id)
+        self.save_config()
 
-        embed = discord.Embed(
-            title="✅ Info Channel Registered",
-            description=f"This channel has been registered for `!info` commands.",
-            color=discord.Color.green()
-        )
-        await channel.send(embed=embed)
+    # Crear un embed visual como el de la imagen
+    embed = discord.Embed(
+        title="📢 Welcome to the Info Panel!",
+        description="This channel is now set to receive bot information messages.",
+        color=discord.Color.purple()
+    )
+    embed.set_footer(text="You can update this anytime using /setup")
 
-        await interaction.response.send_message(
-            f"✅ Channel {channel.mention} registered and notified!",
-            ephemeral=True
-        )
+    # Enviar el embed al canal seleccionado
+    await channel.send(embed=embed)
+
+    # Confirmación privada al usuario
+    await interaction.response.send_message(
+        f"✅ Successfully registered {channel.mention} as an info channel!",
+        ephemeral=True
+    )
+
 
     # ────── HYBRID COMMAND: /infochannels ──────
     @commands.hybrid_command(name="infochannels", description="List allowed channels")
